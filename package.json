@@ -1,0 +1,21 @@
+{
+  "name": "capturingine",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "captcha-solver": "0.0.6",
+    "captcha-solver-provider": "0.0.6",
+    "express": "^4.15.2",
+    "puppeteer": "https://github.com/GoogleChrome/puppeteer",
+    "socket.io": "^2.1.1"
+  },
+  "devDependencies": {
+    "babel-preset-env": "^1.7.0"
+  }
+}
