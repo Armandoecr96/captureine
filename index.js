@@ -8,22 +8,28 @@ const sesions = []
 
 io.on('connection', handleConnectedSocket)
 
-async function handleConnectedSocket (socket) {
-  const page = data.initPuppeteer()
-  sesions.push({ user: socket.id, page })
+function handleConnectedSocket (socket) {
+  console.log('User connected ', socket.id)
 
-  socket.on('getCaptcha', (ine, nu, ocr, captcha, cb) => {
-    const userSession = sesions.find(x => x.user === socket.id)
-    data.modelABC(userSession.page, ine, nu, ocr, captcha)
-    console.log('hasCallback: ', cb(ine))
+  socket.on('getCaptcha', (cb) => {
+    data.initPuppeteer({ headless: false })
+    .then(({ page, imageCaptcha }) => {
+      sesions.push({ user: socket.id, page })
+      cb(imageCaptcha)
+    })
   })
 
-  /**
-  socket.on('resolveCapcha', (ine, capcha, cb) => {
+  socket.on('validateINE', ({ ine, nu, ocr, captcha }, cb) => {
+    const userSession = sesions.find(x => x.user === socket.id)
+    data.modelABC(userSession.page, ine, nu, ocr, captcha).then(cb)
+  })
+
+  /*
+  socket.on('resolveCapcha', async (ine, capcha, cb) => {
     data.modelABC(ine, capcha)
     console.log('hasCallback: ', cb(capcha))
   })
-   */
+  */
 
   socket.on('disconnect', () => {
     var index = sesions.indexOf(5)
@@ -33,5 +39,5 @@ async function handleConnectedSocket (socket) {
 }
 
 http.listen(process.env.PORT || 3000, () => (
-  console.log('Server enabled')
+  console.log('Running at http://localhost:3000')
 ))
