@@ -11,7 +11,7 @@
   "dependencies": {
     "captcha-solver": "0.0.6",
     "captcha-solver-provider": "0.0.6",
-    "express": "^4.15.2",
+    "express": "^4.16.3",
     "puppeteer": "https://github.com/GoogleChrome/puppeteer",
     "socket.io": "^2.1.1"
   },
