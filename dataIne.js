@@ -27,10 +27,10 @@ exports.initPuppeteer = async function initPuppeteer (options, isINE) {
 
   const imageCaptcha = fs.readFileSync('captcha.png')
 
-  return { page, imageCaptcha, recoverIMG }
+  return { browser, page, imageCaptcha, recoverIMG }
 }
 
-exports.modelABC = async function modelABC (page, claveElector, numeroEmision, ocr, captcha) {
+exports.modelABC = async function modelABC (browser, page, claveElector, numeroEmision, ocr, captcha) {
   if (!page) throw new Error('Uninitialized page')
 
   // Clave Elector
@@ -54,12 +54,12 @@ exports.modelABC = async function modelABC (page, claveElector, numeroEmision, o
   await page.click('#Consulta')
   await page.waitFor(2000)
 
-  await page.screenshot({ path: 'consulta.png' })
-
   const recoverIMG = await page.evaluate(() => {
     let img = document.querySelector('.col-md-offset-2 img')
     return img.src
   })
+
+  browser.close()
 
   let validation
   if (recoverIMG === 'https://listanominal.ife.org.mx/images/si_vigente_vota.png') {
@@ -71,19 +71,17 @@ exports.modelABC = async function modelABC (page, claveElector, numeroEmision, o
   return validation
 }
 
-exports.modelDE = async function modelDE (page, ine, captcha) {
+exports.modelDE = async function modelDE (browser, page, ine, captcha) {
   if (!page) throw new Error('Uninitialized page')
+  console.log(captcha)
 
   await page.waitFor('#CIC')
   await page.click('#CIC')
   await page.type('#CIC', ine)
-  await page.waitFor(1000)
 
-  await page.screenshot({path: 'modelDE.png', clip: {width: 200, height: 60, x: 300, y: 580}})
+  await page.waitFor('#captcha-form')
   await page.click('#captcha-form')
   await page.type('#captcha-form', captcha)
-
-  await page.waitFor(10000)
 
   await page.waitFor('#Consulta')
   await page.click('#Consulta')
@@ -93,6 +91,8 @@ exports.modelDE = async function modelDE (page, ine, captcha) {
     let img = document.querySelector('.col-md-offset-2 img')
     return img.src
   })
+
+  browser.close()
 
   let validation
   if (recoverIMG === 'https://listanominal.ife.org.mx/images/si_vigente_vota.png') {

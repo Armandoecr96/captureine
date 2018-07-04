@@ -1,62 +1,114 @@
 <!doctype html>
 <html>
-  <head>
-      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
-      <link rel="stylesheet" href="index.css" />
-    <title>Capturine Demo</title>
-  </head>
-  <body>
-    <div>
-      <label>¿Es un INE?</label><br>
-      <input id='isINE' type="checkbox" /> <br>
-      <form id='ine-form-ABC' name='ine-form-ABC'>
-        <p>Formulario pre-capcha</p> <br>
-        <input id='ine' name='ine' placeholder='Clave de elector' /><br>
-        <input id='nu' name='nu' placeholder='Número de emisión' /><br>
-        <input id='ocr' name='ocr' placeholder='Número (OCR)' /><br>
-        <input id='captcha' name='captcha' placeholder='Escribe la cadena de verificación' /><br>
 
-        <button>Request Capcha</button>
-      </form>
-      <form id='ine-form-DE' action="">
+<head>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB"
+    crossorigin="anonymous">
+  <link rel="stylesheet" href="index.css" />
+  <title>Capturine Demo</title>
+</head>
 
-      </form>
-      <img id="demo-INE" src="" alt="">
-      <img id='captcha-source' src="https://media.giphy.com/media/xTk9ZvMnbIiIew7IpW/giphy.gif" alt="" />
-    </div>
-  </body>
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js'></script>
-  <script>
-    ;(function main () {
-      const socket = io('http://localhost:3000')
-      const form = document.querySelector('#ine-form-ABC')
-      const captchaSource = document.querySelector('#captcha-source')
-      const demoINE = document.querySelector('#demo-INE')
+<body>
+  <div>
+    <label>¿Es un INE?</label>
+    <br>
+    INE <input id='isINE' type="radio" name='checkINE' onclick='isChecked()' />
+    IFE <input type="radio" name="checkINE" id="" onclick='isChecked()'>
+    <br>
+    <h3>Formulario pre-capcha</h3>
+    <form id='ine-form-ABC' name='ine-form-ABC'>
+      
+      <br>
+      <input id='ine' name='ine' placeholder='Clave de elector' />
+      <br>
+      <input id='nu' name='nu' placeholder='Número de emisión' />
+      <br>
+      <input id='ocr' name='ocr' placeholder='Número (OCR)' />
+      <br>
+      <input id='captcha' name='captcha' placeholder='Escribe la cadena de verificación' />
+      <br>
 
-      form.addEventListener('submit', handleINEFormSubmit)
+      <button>Request Capcha</button>
+    </form>
 
-      function handleINEFormSubmit (e) {
-        e.preventDefault()
+    <form id='ine-form-DE' style="display: none">
+      <input type="text" name="cic" id="cic" placeholder="CIC"><br>
+      <input type="text" name="captchaDE" id="captchaDE" placeholder="Captcha"><br>
+      <button>Request Capcha</button>
+    </form>
 
-        const ine = document.querySelector('#ine').value
-        const nu = document.querySelector('#nu').value
-        const ocr = document.querySelector('#ocr').value
-        const captcha = document.querySelector('#captcha').value
+    <img id="demo-INE" src="" alt="">
+    <img id='captcha-source' src="" alt="" />
+  </div>
+</body>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js'></script>
+<script>
+  const socket = io('http://localhost:3000')
+  const form = document.querySelector('#ine-form-ABC')
+  const captchaSource = document.querySelector('#captcha-source')
+  const demoINE = document.querySelector('#demo-INE')
+  const nu = document.querySelector('#nu')
+  const ocr = document.querySelector('#ocr')
+  var isINE = document.querySelector('#isINE')
+  var checked = isINE.checked
 
-        socket.emit('validateINEABC', { ine, nu, ocr, captcha }, (isValidINE) => {
-          if (isValidINE) return alert('Fue valida')
-          return alert('No fue valida')
-        })
-      }
+  form.addEventListener('submit', handleINEFormSubmit)
 
-      socket.emit('getCaptcha', (imageCaptcha, recoverIMG) => {
-        const arrayBufferView = new Uint8Array(imageCaptcha)
-        const blob = new Blob( [ arrayBufferView ], { type: "image/jpeg" } )
-        const urlCreator = window.URL || window.webkitURL
-        const imageUrl = urlCreator.createObjectURL(blob)
-        captchaSource.src = imageUrl
-        demoINE.src = recoverIMG
+  function isChecked() {
+
+    checked = isINE.checked
+    console.log(checked)
+    if(checked === false) {
+      nu.style.display = 'block'
+      ocr.style.display = 'block'
+    }else {
+      nu.style.display = 'none'
+      ocr.style.display = 'none'
+    }
+    captchaSource.src = 'https://media.giphy.com/media/xTk9ZvMnbIiIew7IpW/giphy.gif'
+    demoINE.src = ''
+    socket.emit('getCaptcha', {
+      checked
+    }, (imageCaptcha, recoverIMG) => {
+      const arrayBufferView = new Uint8Array(imageCaptcha)
+      const blob = new Blob([arrayBufferView], {
+        type: "image/jpeg"
       })
-    })()
-  </script>
+      const urlCreator = window.URL || window.webkitURL
+      const imageUrl = urlCreator.createObjectURL(blob)
+      captchaSource.src = imageUrl
+      demoINE.src = recoverIMG
+    })
+  }
+
+  function handleINEFormSubmit(e) {
+    e.preventDefault()
+    checked = isINE.checked
+    const ine = document.querySelector('#ine').value
+    const nu = document.querySelector('#nu').value
+    const ocr = document.querySelector('#ocr').value
+    const captcha = document.querySelector('#captcha').value
+
+    if(checked === false){
+        socket.emit('validateINEABC', {
+        ine,
+        nu,
+        ocr,
+        captcha
+      }, (isValidINE) => {
+        if (isValidINE) return alert('Fue valida')
+        return alert('No fue valida')
+      })
+    } else {
+      socket.emit('validateINEDE', {
+        ine,
+        captcha
+      }, (isValidINE) => {
+        if (isValidINE) return alert('Fue valida')
+        return alert('No fue valida')
+      })
+    }
+  }
+</script>
+
 </html>

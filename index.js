@@ -11,22 +11,22 @@ io.on('connection', handleConnectedSocket)
 function handleConnectedSocket (socket) {
   console.log('User connected ', socket.id)
 
-  socket.on('getCaptcha', (cb) => {
-    data.initPuppeteer({ headless: true })
-      .then(({ page, imageCaptcha, recoverIMG }) => {
-        sesions.push({ user: socket.id, page })
+  socket.on('getCaptcha', ({checked}, cb) => {
+    data.initPuppeteer({ headless: false }, checked)
+      .then(({browser, page, imageCaptcha, recoverIMG}) => {
+        sesions.push({ user: socket.id, browser, page })
         cb(imageCaptcha, recoverIMG)
       })
   })
 
   socket.on('validateINEABC', ({ ine, nu, ocr, captcha }, cb) => {
     const userSession = sesions.find(x => x.user === socket.id)
-    data.modelABC(userSession.page, ine, nu, ocr, captcha).then(cb)
+    data.modelABC(userSession.browser, userSession.page, ine, nu, ocr, captcha).then(cb)
   })
 
   socket.on('validateINEDE', ({ine, captcha}, cb) => {
     const userSession = sesions.find(x => x.user === socket.id)
-    data.modelDE(userSession, ine, captcha).then(cb)
+    data.modelDE(userSession.browser, userSession.page, ine, captcha).then(cb)
   })
 
   socket.on('disconnect', () => {
