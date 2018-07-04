@@ -12,24 +12,22 @@ function handleConnectedSocket (socket) {
   console.log('User connected ', socket.id)
 
   socket.on('getCaptcha', (cb) => {
-    data.initPuppeteer({ headless: false })
-    .then(({ page, imageCaptcha }) => {
-      sesions.push({ user: socket.id, page })
-      cb(imageCaptcha)
-    })
+    data.initPuppeteer({ headless: true })
+      .then(({ page, imageCaptcha, recoverIMG }) => {
+        sesions.push({ user: socket.id, page })
+        cb(imageCaptcha, recoverIMG)
+      })
   })
 
-  socket.on('validateINE', ({ ine, nu, ocr, captcha }, cb) => {
+  socket.on('validateINEABC', ({ ine, nu, ocr, captcha }, cb) => {
     const userSession = sesions.find(x => x.user === socket.id)
     data.modelABC(userSession.page, ine, nu, ocr, captcha).then(cb)
   })
 
-  /*
-  socket.on('resolveCapcha', async (ine, capcha, cb) => {
-    data.modelABC(ine, capcha)
-    console.log('hasCallback: ', cb(capcha))
+  socket.on('validateINEDE', ({ine, captcha}, cb) => {
+    const userSession = sesions.find(x => x.user === socket.id)
+    data.modelDE(userSession, ine, captcha).then(cb)
   })
-  */
 
   socket.on('disconnect', () => {
     var index = sesions.indexOf(5)

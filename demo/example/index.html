@@ -1,21 +1,27 @@
 <!doctype html>
 <html>
   <head>
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+      <link rel="stylesheet" href="index.css" />
     <title>Capturine Demo</title>
   </head>
   <body>
     <div>
-      <form id='ine-form' name='ine-form'>
-        <p>Formulario pre-capcha</p>
-
-        <input id='ine' name='ine' placeholder='Clave de elector' />
-        <input id='nu' name='nu' placeholder='Número de emisión' />
-        <input id='ocr' name='ocr' placeholder='Número (OCR)' />
-        <input id='captcha' name='captcha' placeholder='Escribe la cadena de verificación' />
+      <label>¿Es un INE?</label><br>
+      <input id='isINE' type="checkbox" /> <br>
+      <form id='ine-form-ABC' name='ine-form-ABC'>
+        <p>Formulario pre-capcha</p> <br>
+        <input id='ine' name='ine' placeholder='Clave de elector' /><br>
+        <input id='nu' name='nu' placeholder='Número de emisión' /><br>
+        <input id='ocr' name='ocr' placeholder='Número (OCR)' /><br>
+        <input id='captcha' name='captcha' placeholder='Escribe la cadena de verificación' /><br>
 
         <button>Request Capcha</button>
       </form>
+      <form id='ine-form-DE' action="">
 
+      </form>
+      <img id="demo-INE" src="" alt="">
       <img id='captcha-source' src="https://media.giphy.com/media/xTk9ZvMnbIiIew7IpW/giphy.gif" alt="" />
     </div>
   </body>
@@ -23,9 +29,9 @@
   <script>
     ;(function main () {
       const socket = io('http://localhost:3000')
-
-      const form = document.querySelector('#ine-form')
+      const form = document.querySelector('#ine-form-ABC')
       const captchaSource = document.querySelector('#captcha-source')
+      const demoINE = document.querySelector('#demo-INE')
 
       form.addEventListener('submit', handleINEFormSubmit)
 
@@ -37,18 +43,19 @@
         const ocr = document.querySelector('#ocr').value
         const captcha = document.querySelector('#captcha').value
 
-        socket.emit('validateINE', { ine, nu, ocr, captcha }, (isValidINE) => {
+        socket.emit('validateINEABC', { ine, nu, ocr, captcha }, (isValidINE) => {
           if (isValidINE) return alert('Fue valida')
           return alert('No fue valida')
         })
       }
 
-      socket.emit('getCaptcha', imageCaptcha => {
+      socket.emit('getCaptcha', (imageCaptcha, recoverIMG) => {
         const arrayBufferView = new Uint8Array(imageCaptcha)
         const blob = new Blob( [ arrayBufferView ], { type: "image/jpeg" } )
         const urlCreator = window.URL || window.webkitURL
         const imageUrl = urlCreator.createObjectURL(blob)
         captchaSource.src = imageUrl
+        demoINE.src = recoverIMG
       })
     })()
   </script>
